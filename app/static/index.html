@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bicycle Counter</title>
+
+  <script>tailwind = { config: { darkMode: "class" } };</script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="min-h-screen bg-zinc-950 text-zinc-100">
+  <div class="mx-auto max-w-6xl px-6 py-10">
+    <header class="flex items-center justify-between">
+      <div>
+        <div class="text-sm text-zinc-400">Зимняя практика</div>
+        <h1 class="mt-1 text-2xl font-semibold tracking-tight">Счётчик велосипедов</h1>
+      </div>
+    </header>
+
+    <section class="mt-10 grid gap-6 md:grid-cols-3">
+      <a
+        href="/photo"
+        class="group rounded-2xl border border-zinc-800 bg-zinc-900/30 p-6 transition hover:border-zinc-700 hover:bg-zinc-900/45"
+      >
+        <div class="flex items-center justify-between">
+          <div class="text-lg font-medium">Фото</div>
+          <div class="text-zinc-400 transition group-hover:text-zinc-200">→</div>
+        </div>
+        <div class="mt-2 text-sm text-zinc-400">
+          Загрузите изображение, запустите детекцию, получите количество и оверлей.
+        </div>
+        <div class="mt-4 text-xs text-zinc-500">
+          Эндпоинт: <span class="font-mono">/api/count/photo</span>
+        </div>
+      </a>
+
+      <a
+        href="/video"
+        class="group rounded-2xl border border-zinc-800 bg-zinc-900/30 p-6 transition hover:border-zinc-700 hover:bg-zinc-900/45"
+      >
+        <div class="flex items-center justify-between">
+          <div class="text-lg font-medium">Видео</div>
+          <div class="text-zinc-400 transition group-hover:text-zinc-200">→</div>
+        </div>
+        <div class="mt-2 text-sm text-zinc-400">
+          Загрузите видео, перемотка/пауза, оверлеи по временным меткам.
+        </div>
+        <div class="mt-4 text-xs text-zinc-500">
+          Эндпоинт: <span class="font-mono">/api/count/video</span>
+        </div>
+      </a>
+
+      <a
+        href="/stream"
+        class="group rounded-2xl border border-zinc-800 bg-zinc-900/30 p-6 transition hover:border-zinc-700 hover:bg-zinc-900/45"
+      >
+        <div class="flex items-center justify-between">
+          <div class="text-lg font-medium">Трансляция</div>
+          <div class="text-zinc-400 transition group-hover:text-zinc-200">→</div>
+        </div>
+        <div class="mt-2 text-sm text-zinc-400">
+          RTSP поток → аннотация (встроенные рамки) → HLS выход, воспроизводится в браузере.
+        </div>
+        <div class="mt-4 text-xs text-zinc-500">
+          Эндпоинт: <span class="font-mono">/api/stream/*</span> • Выход: <span class="font-mono">/hls/stream.m3u8</span>
+        </div>
+      </a>
+    </section>
+
+    <section class="mt-10 rounded-2xl border border-zinc-800 bg-zinc-900/20 p-6">
+      <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div>
+          <div class="text-sm font-medium text-zinc-200">Отчёты</div>
+          <div class="mt-1 text-sm text-zinc-400">
+            Генерация отчётов из истории SQLite. Оставьте даты пустыми для использования всех данных.
+          </div>
+          <div class="mt-2 text-xs text-zinc-500">
+            PDF: <span class="font-mono">/api/report/pdf</span>
+            <span class="mx-2 text-zinc-700">•</span>
+            XLSX: <span class="font-mono">/api/report/xlsx</span>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-3 md:flex-row md:items-end">
+          <div class="flex flex-col gap-1">
+            <label class="text-xs text-zinc-400">Начало (необязательно)</label>
+            <input
+              id="reportStart"
+              type="date"
+              class="w-full rounded-xl border border-zinc-800 bg-zinc-950/60 px-3 py-2 text-sm text-zinc-100 outline-none transition focus:border-zinc-600 md:w-44"
+            />
+          </div>
+
+          <div class="flex flex-col gap-1">
+            <label class="text-xs text-zinc-400">Конец (необязательно)</label>
+            <input
+              id="reportEnd"
+              type="date"
+              class="w-full rounded-xl border border-zinc-800 bg-zinc-950/60 px-3 py-2 text-sm text-zinc-100 outline-none transition focus:border-zinc-600 md:w-44"
+            />
+          </div>
+
+          <div class="flex flex-row items-end justify-end gap-3 self-end whitespace-nowrap">
+            <button
+              id="btnReportClear"
+              class="h-10 rounded-xl border border-zinc-800 bg-zinc-950/40 px-4 text-sm text-zinc-200 transition hover:border-zinc-700 hover:bg-zinc-950/60"
+              title="Очистить даты"
+            >
+              🧹
+            </button>
+
+            <button
+              id="btnReportPdf"
+              class="h-10 rounded-xl bg-zinc-100 px-4 text-sm font-medium text-zinc-950 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Открыть PDF
+            </button>
+
+            <button
+              id="btnReportXlsx"
+              class="h-10 rounded-xl border border-zinc-700 bg-zinc-950/30 px-4 text-sm font-medium text-zinc-100 transition hover:border-zinc-600 hover:bg-zinc-950/50 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Скачать XLSX
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div id="reportHint" class="mt-4 text-xs text-zinc-500">
+        Даты интерпретируются бэкендом как UTC.
+      </div>
+
+      <div id="reportError" class="mt-2 hidden rounded-xl border border-red-900/50 bg-red-950/30 px-4 py-3 text-sm text-red-200"></div>
+
+      <script>
+        (() => {
+          const startEl = document.getElementById("reportStart");
+          const endEl = document.getElementById("reportEnd");
+          const btnPdf = document.getElementById("btnReportPdf");
+          const btnXlsx = document.getElementById("btnReportXlsx");
+          const btnClear = document.getElementById("btnReportClear");
+          const errEl = document.getElementById("reportError");
+
+          function setError(msg) {
+            if (!msg) {
+              errEl.classList.add("hidden");
+              errEl.textContent = "";
+              return;
+            }
+            errEl.classList.remove("hidden");
+            errEl.textContent = msg;
+          }
+
+          function validateRange() {
+            const start = (startEl.value || "").trim();
+            const end = (endEl.value || "").trim();
+            if (start && end && end < start) {
+              setError("Дата окончания должна быть не раньше даты начала.");
+              return false;
+            }
+            return true;
+          }
+
+          function buildUrl(kind) {
+            const start = (startEl.value || "").trim();
+            const end = (endEl.value || "").trim();
+
+            const params = new URLSearchParams();
+            if (start) params.set("start", start);
+            if (end) params.set("end", end);
+
+            const qs = params.toString();
+            return qs ? `/api/report/${kind}?${qs}` : `/api/report/${kind}`;
+          }
+
+          async function preflight(url) {
+            const resp = await fetch(url, { method: "GET" });
+            if (!resp.ok) {
+              let msg = `Не удалось сгенерировать отчёт (${resp.status})`;
+              try {
+                const data = await resp.json();
+                if (data && data.detail) msg = data.detail;
+              } catch {}
+              throw new Error(msg);
+            }
+            return resp;
+          }
+
+          btnPdf.addEventListener("click", async () => {
+            setError(null);
+            if (!validateRange()) return;
+
+            btnPdf.disabled = true;
+            btnXlsx.disabled = true;
+            btnPdf.textContent = "Открытие…";
+
+            try {
+              const url = buildUrl("pdf");
+              await preflight(url);
+              window.open(url, "_blank", "noopener,noreferrer");
+            } catch (e) {
+              setError(String(e));
+            } finally {
+              btnPdf.disabled = false;
+              btnXlsx.disabled = false;
+              btnPdf.textContent = "Открыть PDF";
+            }
+          });
+
+          btnXlsx.addEventListener("click", async () => {
+            setError(null);
+            if (!validateRange()) return;
+
+            btnPdf.disabled = true;
+            btnXlsx.disabled = true;
+            btnXlsx.textContent = "Загрузка…";
+
+            try {
+              const url = buildUrl("xlsx");
+              const resp = await preflight(url);
+
+              // Download using a blob so we can still show errors nicely.
+              const blob = await resp.blob();
+              const a = document.createElement("a");
+              const dlUrl = URL.createObjectURL(blob);
+
+              // Try to keep server-provided filename (Content-Disposition) if present,
+              // else fallback.
+              let filename = "bicycle_counter_report.xlsx";
+              const cd = resp.headers.get("Content-Disposition") || "";
+              const m = cd.match(/filename="([^"]+)"/);
+              if (m && m[1]) filename = m[1];
+
+              a.href = dlUrl;
+              a.download = filename;
+              document.body.appendChild(a);
+              a.click();
+              a.remove();
+              URL.revokeObjectURL(dlUrl);
+            } catch (e) {
+              setError(String(e));
+            } finally {
+              btnPdf.disabled = false;
+              btnXlsx.disabled = false;
+              btnXlsx.textContent = "Скачать XLSX";
+            }
+          });
+
+          btnClear.addEventListener("click", () => {
+            startEl.value = "";
+            endEl.value = "";
+            setError(null);
+          });
+        })();
+      </script>
+    </section>
+  </div>
+</body>
+</html>

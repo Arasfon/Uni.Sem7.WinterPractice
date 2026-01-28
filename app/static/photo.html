@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="ru" class="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Фото • Счётчик велосипедов</title>
+  <script>tailwind = { config: { darkMode: "class" } };</script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="min-h-screen overflow-x-hidden bg-zinc-950 text-zinc-100">
+  <div class="mx-auto max-w-6xl px-6 py-8">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="/" class="rounded-lg border border-zinc-800 bg-zinc-900/40 px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-900">← Главная</a>
+        <div>
+          <div class="text-sm text-zinc-400">Загрузка изображения → детекция велосипедов → подсчёт (+ опциональный ROI)</div>
+          <h1 class="text-xl font-semibold tracking-tight">Фото</h1>
+        </div>
+      </div>
+      <div class="text-xs text-zinc-500">API: <span class="font-mono">/api/count/photo</span></div>
+    </div>
+
+    <div class="mt-6 grid gap-6 lg:grid-cols-5">
+      <!-- Controls -->
+      <div class="lg:col-span-2 min-w-0 rounded-2xl border border-zinc-800 bg-zinc-900/30 p-5">
+        <div class="text-sm font-medium text-zinc-200">Управление</div>
+
+        <label class="mt-4 block text-xs text-zinc-400">Файл изображения</label>
+        <input id="fileInput" type="file" accept="image/*"
+          class="mt-2 block w-full cursor-pointer rounded-xl border border-zinc-800 bg-zinc-950/60 px-4 py-2 text-sm text-zinc-100
+                 file:mr-4 file:rounded-lg file:border-0 file:bg-zinc-800 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-zinc-100
+                 hover:file:bg-zinc-700" />
+
+        <div class="mt-4 grid grid-cols-2 gap-2">
+          <button id="btnDetect" disabled
+            class="rounded-xl bg-emerald-600/90 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-600 disabled:opacity-50">
+            Запустить детекцию
+          </button>
+          <button id="btnClear" disabled
+            class="rounded-xl border border-zinc-800 bg-zinc-900/40 px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-900 disabled:opacity-50">
+            Очистить
+          </button>
+        </div>
+
+        <div class="mt-5 rounded-2xl border border-zinc-800 bg-black/30 p-4">
+          <div class="flex items-center justify-between">
+            <div class="text-sm font-medium text-zinc-200">ROI</div>
+            <label class="inline-flex items-center gap-2 text-xs text-zinc-300 select-none">
+              <input id="roiEnabled" type="checkbox"
+                class="h-4 w-4 rounded border-zinc-700 bg-zinc-950 text-emerald-500 focus:ring-2 focus:ring-zinc-600" />
+              Использовать ROI
+            </label>
+          </div>
+
+          <div class="mt-2 text-xs text-zinc-500">
+            Кликните для добавления точек, перетаскивайте точки для настройки. ROI отправляется на сервер при включении.
+          </div>
+
+          <div class="mt-3 grid grid-cols-2 gap-2">
+            <button id="btnEditRoi" disabled
+              class="rounded-xl border border-zinc-800 bg-zinc-900/40 px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-900 disabled:opacity-50">
+              Редактировать ROI
+            </button>
+            <button id="btnClearRoi" disabled
+              class="rounded-xl border border-zinc-800 bg-zinc-900/40 px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-900 disabled:opacity-50">
+              Очистить ROI
+            </button>
+          </div>
+
+          <div class="mt-3 text-xs text-zinc-500">
+            Точки ROI: <span id="roiCount" class="font-mono">0</span>
+            <span id="roiMode" class="ml-2 rounded-full border border-zinc-800 bg-zinc-900/50 px-2 py-0.5 text-[11px] text-zinc-300">ожидание</span>
+          </div>
+        </div>
+
+        <div class="mt-5 grid gap-3">
+          <div class="rounded-xl border border-zinc-800 bg-black/30 p-3">
+            <div class="text-xs text-zinc-400">Результат</div>
+            <div class="mt-2 grid grid-cols-2 gap-3 text-sm">
+              <div>
+                <div class="text-xs text-zinc-500">Количество</div>
+                <div id="count" class="font-mono text-zinc-100">-</div>
+              </div>
+              <div>
+                <div class="text-xs text-zinc-500">Рамки</div>
+                <div id="boxCount" class="font-mono text-zinc-100">-</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="rounded-xl border border-zinc-800 bg-black/30 p-3">
+            <div class="flex items-center justify-between">
+              <div class="text-xs text-zinc-400">Статус</div>
+              <button id="btnClearStatus"
+                class="rounded-lg border border-zinc-800 bg-zinc-900/40 px-2 py-1 text-xs text-zinc-300 hover:bg-zinc-900">
+                Очистить
+              </button>
+            </div>
+            <pre id="status"
+              class="mt-2 max-h-56 w-full max-w-full overflow-auto whitespace-pre-wrap break-all text-xs text-zinc-200"></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- Viewer -->
+      <div class="lg:col-span-3 min-w-0 rounded-2xl border border-zinc-800 bg-zinc-900/20 p-5">
+        <div class="flex items-center justify-between">
+          <div class="text-sm font-medium text-zinc-200">Предпросмотр</div>
+          <div class="text-xs text-zinc-500">ROI требует ≥ 3 точек</div>
+        </div>
+
+        <div class="mt-4">
+          <div class="relative overflow-hidden rounded-2xl border border-zinc-800 bg-black">
+            <img id="img" class="block w-full select-none" />
+            <canvas id="overlay" class="absolute inset-0"></canvas>
+          </div>
+          <div class="mt-3 text-xs text-zinc-500">
+            Управление: клик добавляет точку ROI • перетаскивание перемещает точку • <span class="font-mono">Esc</span> выходит из редактирования ROI.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/js/photo.js"></script>
+</body>
+</html>

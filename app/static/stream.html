@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="ru" class="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Трансляция • Счётчик велосипедов</title>
+  <script>tailwind = { config: { darkMode: "class" } };</script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="min-h-screen bg-zinc-950 text-zinc-100">
+  <div class="mx-auto max-w-6xl px-6 py-8">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="/" class="rounded-lg border border-zinc-800 bg-zinc-900/40 px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-900">
+          ← Главная
+        </a>
+        <div>
+          <div class="text-sm text-zinc-400">RTSP поток → встроенные рамки → HLS</div>
+          <h1 class="text-xl font-semibold tracking-tight">Трансляция</h1>
+        </div>
+      </div>
+
+      <a id="openPlaylist" href="/hls/stream.m3u8" target="_blank"
+         class="rounded-lg border border-zinc-800 bg-zinc-900/40 px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-900">
+        Открыть плейлист
+      </a>
+    </div>
+
+    <div class="mt-6 grid gap-6 lg:grid-cols-5">
+      <!-- Controls -->
+      <div class="lg:col-span-2 rounded-2xl border border-zinc-800 bg-zinc-900/30 p-5">
+        <div class="text-sm font-medium text-zinc-200">Управление</div>
+
+        <label class="mt-4 block text-xs text-zinc-400">RTSP URL (вход)</label>
+        <input
+          id="inputUrl"
+          class="mt-2 w-full rounded-xl border border-zinc-800 bg-zinc-950/60 px-4 py-2 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-zinc-600"
+          placeholder="rtsp://127.0.0.1:8554/bikes"
+        />
+
+        <div class="mt-4 grid grid-cols-2 gap-2">
+          <button id="btnStart"
+            class="rounded-xl bg-emerald-600/90 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-600">
+            Запустить пайплайн
+          </button>
+          <button id="btnStop"
+            class="rounded-xl bg-rose-600/90 px-4 py-2 text-sm font-medium text-white hover:bg-rose-600">
+            Остановить пайплайн
+          </button>
+
+          <button id="btnReload"
+            class="rounded-xl border border-zinc-800 bg-zinc-900/40 px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-900">
+            Загрузить/Перезагрузить плеер
+          </button>
+          <button id="btnStopPlayer"
+            class="rounded-xl border border-zinc-800 bg-zinc-900/40 px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-900">
+            Остановить плеер
+          </button>
+        </div>
+
+        <div class="mt-5 grid gap-3">
+          <div class="rounded-xl border border-zinc-800 bg-black/30 p-3">
+            <div class="text-xs text-zinc-400">Статус</div>
+            <pre id="status" class="mt-2 max-h-48 overflow-auto text-xs text-zinc-200 whitespace-pre-wrap break-all w-full max-w-full"></pre>
+          </div>
+
+          <div class="rounded-xl border border-zinc-800 bg-black/30 p-3">
+            <div class="flex items-center justify-between">
+              <div class="text-xs text-zinc-400">Логи плеера / hls.js</div>
+              <button id="btnClearLogs"
+                class="rounded-lg border border-zinc-800 bg-zinc-900/40 px-2 py-1 text-xs text-zinc-300 hover:bg-zinc-900">
+                Очистить
+              </button>
+            </div>
+            <pre id="logs" class="mt-2 max-h-48 overflow-auto text-xs text-zinc-200 whitespace-pre-wrap break-all w-full max-w-full"></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- Player -->
+      <div class="lg:col-span-3 rounded-2xl border border-zinc-800 bg-zinc-900/20 p-5">
+        <div class="flex items-center justify-between">
+          <div class="text-sm font-medium text-zinc-200">Плеер</div>
+
+          <div class="flex items-center gap-2 text-xs">
+              <span id="hlsBadge"
+              class="inline-flex items-center rounded-full border border-zinc-800 bg-zinc-900/50 px-2 py-1 text-zinc-300">
+              HLS: ожидание
+              </span>
+
+              <div class="text-zinc-500">
+              Выход: <span class="font-mono">/hls/stream.m3u8</span>
+              </div>
+          </div>
+        </div>
+
+        <div class="mt-4 overflow-hidden rounded-2xl border border-zinc-800 bg-black">
+          <video id="video" class="w-full" controls autoplay muted playsinline></video>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <script src="/static/js/stream.js"></script>
+</body>
+</html>
